@@ -3,4 +3,4 @@ services:
     name: student-accommodation-platform
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: cd student_accommodation_platform && python manage.py runserver 0.0.0.0:$PORT
+    startCommand: python manage.py runserver 0.0.0.0:$PORT
