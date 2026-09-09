@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,9 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-llww+)e4wndqgn*o4qeo@xg+!@+t^r$c-_8v5##dfw1!z-++8-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'true').lower() in ('1', 'true', 'yes')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+if not DEBUG:
+    ALLOWED_HOSTS = [host for host in ALLOWED_HOSTS if host]
 
 
 # Application definition
@@ -37,6 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Third-party
+    'rest_framework',
+    # Project apps
+    'landlords',
+    'accommodations',
+    'reviews',
 ]
 
 MIDDLEWARE = [
@@ -74,10 +83,19 @@ WSGI_APPLICATION = 'student_accommodation_platform.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.environ.get('DB_NAME', BASE_DIR / 'db.sqlite3'),
+        'USER': os.environ.get('DB_USER', ''),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', ''),
+        'PORT': os.environ.get('DB_PORT', ''),
+        'CONN_MAX_AGE': 60,
     }
 }
+
+# PostgreSQL example (export the DB_* env vars to use Postgres):
+#   DB_ENGINE=django.db.backends.postgresql DB_NAME=accommodation DB_USER=postgres \
+#   DB_PASSWORD=secret DB_HOST=localhost DB_PORT=5432 python manage.py migrate
 
 
 # Password validation
@@ -104,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Lagos'
 
 USE_I18N = True
 
@@ -124,4 +142,23 @@ MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
+}
+
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+}
+
+# LASU Epe Campus reference point (Iwaye, Epe, Lagos State, Nigeria).
+# Default derived from OpenStreetMap buildings on campus (~6.590°N, 3.996°E,
+# north bank of the Lekki Lagoon). Override via env if a more precise centroid
+# is available.
+LASU_EPE_CAMPUS = {
+    'lat': float(os.environ.get('LASU_EPE_CAMPUS_LAT', 6.5900)),
+    'lng': float(os.environ.get('LASU_EPE_CAMPUS_LNG', 3.9960)),
 }
