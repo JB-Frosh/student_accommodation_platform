@@ -3,7 +3,7 @@ from rest_framework import serializers
 from landlords.models import Landlord
 from landlords.serializers import LandlordSerializer
 
-from .models import Listing, SecurityRating
+from .models import Listing, ListingImage, SecurityRating
 from .services import distance_from_campus, flag_scam_flag
 
 
@@ -18,6 +18,17 @@ class SecurityRatingSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
 
+class ListingImageSerializer(serializers.ModelSerializer):
+    listing_id = serializers.PrimaryKeyRelatedField(
+        source="listing", queryset=Listing.objects.all()
+    )
+
+    class Meta:
+        model = ListingImage
+        fields = ["id", "listing_id", "image", "caption", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+
 class ListingSerializer(serializers.ModelSerializer):
     landlord = LandlordSerializer(read_only=True)
     landlord_id = serializers.PrimaryKeyRelatedField(
@@ -29,6 +40,7 @@ class ListingSerializer(serializers.ModelSerializer):
     review_count = serializers.IntegerField(read_only=True)
     distance_from_campus = serializers.SerializerMethodField()
     scam_flag = serializers.SerializerMethodField()
+    images = ListingImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Listing
@@ -51,6 +63,7 @@ class ListingSerializer(serializers.ModelSerializer):
             "review_count",
             "distance_from_campus",
             "scam_flag",
+            "images",
         ]
         read_only_fields = ["id", "created_at", "avg_rating", "review_count"]
 

@@ -59,6 +59,23 @@ class Listing(models.Model):
         return self.reviews.aggregate(models.Avg("rating"))["rating__avg"]
 
 
+class ListingImage(models.Model):
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+    image = models.ImageField(upload_to="listing-images/%Y/%m/")
+    caption = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Image for {self.listing_id}"
+
+
 class SecurityRating(models.Model):
     listing = models.ForeignKey(
         Listing,

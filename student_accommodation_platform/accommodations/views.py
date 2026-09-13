@@ -1,10 +1,10 @@
 from django.db.models import Avg, Count
-from rest_framework import status, viewsets
+from rest_framework import parsers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import Listing
-from .serializers import ListingSerializer, ScoredListingSerializer
+from .models import Listing, ListingImage
+from .serializers import ListingImageSerializer, ListingSerializer, ScoredListingSerializer
 from .services import compute_scam_flags, distance_from_campus, parse_preferences, rank_listings
 
 
@@ -118,3 +118,10 @@ class ListingViewSet(viewsets.ModelViewSet):
             payload["scam_info"] = flags[listing.id]
             data.append(payload)
         return Response(data)
+
+
+class ListingImageViewSet(viewsets.ModelViewSet):
+    queryset = ListingImage.objects.select_related("listing").all()
+    serializer_class = ListingImageSerializer
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser]
+    http_method_names = ["get", "post", "delete", "head", "options"]

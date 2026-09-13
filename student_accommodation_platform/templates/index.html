@@ -1,0 +1,78 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Keys | Student accommodation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="{% static 'app.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="brand-mark">ck</span><span>Campus Keys</span></a>
+    <nav class="mode-switch" aria-label="Workspace">
+      <button class="mode-button active" data-mode="discover">Find a place</button>
+      <button class="mode-button" data-mode="host">List a place</button>
+    </nav>
+    <button class="login-button" id="login-button">Sign in</button>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div>
+        <p class="eyebrow">LASU Epe campus</p>
+        <h1>Find somewhere<br><em>that fits.</em></h1>
+        <p class="intro-copy">Real listings, practical details, and a map that keeps campus in view.</p>
+      </div>
+      <div class="campus-note"><span class="pulse"></span><span><strong>Campus centre</strong><br>6.5900° N, 3.9960° E</span></div>
+    </section>
+
+    <section class="workspace" id="discover-view">
+      <aside class="filters panel">
+        <div class="panel-heading"><span>Search homes</span><span class="result-count" id="result-count">0 homes</span></div>
+        <label class="search-field"><span class="icon">⌕</span><input id="search" type="search" placeholder="Area, title, or landmark" autocomplete="off"></label>
+        <div class="filter-grid">
+          <label>Monthly budget<input id="price-max" type="number" min="0" placeholder="Max ₦"></label>
+          <label>Max distance<input id="distance-max" type="number" min="0" step="0.5" placeholder="km"></label>
+          <label>Water<select id="water"><option value="">Any water</option><option value="pipe_borne">Pipe-borne</option><option value="borehole">Borehole</option><option value="well">Well</option><option value="none">None</option></select></label>
+          <label>Power<select id="electricity"><option value="">Any power</option><option value="24hr">24 hours</option><option value="rationed">Rationed</option><option value="none">None</option></select></label>
+        </div>
+        <label class="check-row"><input id="internet" type="checkbox"><span>Only show homes with internet</span></label>
+        <button class="primary-button" id="apply-filters">Update search <span>→</span></button>
+        <button class="text-button" id="reset-filters">Clear all filters</button>
+        <div class="tip"><span>✦</span><p><strong>Smart match</strong><br>Set a budget and distance to discover listings ranked for your routine.</p></div>
+      </aside>
+      <section class="results-area">
+        <div class="map" id="map"></div>
+        <div class="results-toolbar"><span id="result-label">Latest listings</span><button class="sort-button" id="sort-button">Newest first <span>⌄</span></button></div>
+        <div class="listing-grid" id="listing-grid"><div class="loading">Loading listings...</div></div>
+      </section>
+    </section>
+
+    <section class="workspace host-view hidden" id="host-view">
+      <div class="host-copy"><p class="eyebrow">For landlords</p><h2>Put your property<br><em>on the map.</em></h2><p>Give students the details they actually need: honest facilities, clear pricing, and a location they can trust.</p><div class="host-stat"><strong>01</strong><span>One clear listing<br>can reach every student searching today.</span></div></div>
+      <form class="listing-form panel" id="listing-form">
+        <div class="panel-heading"><span>New listing</span><span class="form-status" id="form-status"></span></div>
+        <label>Listing title<input name="title" required placeholder="e.g. Quiet room near Epe campus"></label>
+        <div class="filter-grid"><label>Monthly rent (₦)<input name="price" type="number" min="0" required placeholder="250000"></label><label>Rooms<input name="rooms" type="number" min="1" value="1" required></label></div>
+        <label>Address or landmark<input name="address_text" required placeholder="Epe, Lagos"></label>
+        <div class="filter-grid"><label>Latitude<input name="latitude" type="number" step="any" value="6.5900" required></label><label>Longitude<input name="longitude" type="number" step="any" value="3.9960" required></label></div>
+        <div class="filter-grid"><label>Water<select name="water_availability" required><option value="borehole">Borehole</option><option value="pipe_borne">Pipe-borne</option><option value="well">Well</option><option value="none">None</option></select></label><label>Power<select name="electricity_availability" required><option value="24hr">24 hours</option><option value="rationed">Rationed</option><option value="none">None</option></select></label></div>
+        <label>Description<textarea name="description" rows="3" placeholder="What should a student know?"></textarea></label>
+        <label class="check-row"><input name="internet_availability" type="checkbox"><span>Internet available</span></label>
+        <label class="upload-box"><span class="upload-icon">＋</span><span><strong>Add property photos</strong><small>JPG or PNG, up to 5 images</small></span><input id="images" type="file" accept="image/jpeg,image/png" multiple></label>
+        <button class="primary-button" type="submit">Publish listing <span>→</span></button>
+        <p class="form-hint">You must be signed in to publish. Your listing will appear immediately after saving.</p>
+      </form>
+    </section>
+  </main>
+
+  <dialog id="login-dialog" class="login-dialog"><form method="dialog" id="login-form"><button class="close-button" value="cancel" aria-label="Close">×</button><p class="eyebrow">Your account</p><h2>Welcome back.</h2><p class="dialog-copy">Sign in to publish homes and manage photos.</p><label>Username<input name="username" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary-button" value="default" type="submit">Sign in <span>→</span></button><p class="form-status" id="login-status"></p></form></dialog>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="{% static 'app.js' %}"></script>
+</body>
+</html>
