@@ -3,4 +3,5 @@ frontend/dist/
 __pycache__/
 *.py[cod]
 media/
+staticfiles/
 .venv/
